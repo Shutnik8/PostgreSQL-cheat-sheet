@@ -1,4 +1,4 @@
-# PostgreSQL шпаргалка для новичков
+# [PostgreSQL шпаргалка для новичков](https://shutnik8.github.io/PostgreSQL-cheat-sheet/)
 
 Небольшая одностраничная «книжка»-шпаргалка по основам PostgreSQL и SQL: подключение, базовый CRUD, JOIN, индексы и типичные команды администратора.
 
