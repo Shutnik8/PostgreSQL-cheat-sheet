@@ -1,1 +1,623 @@
+ 
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>PostgreSQL шпаргалка для новичков</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --bg: #f3eee6;
+      --book-bg: #faf6ef;
+      --book-border: #d1bfa4;
+      --accent: #ffb347;
+      --accent2: #8cc7ff;
+      --text-main: #333333;
+      --text-muted: #777777;
+      --sticker-green: #d6f5c4;
+      --sticker-pink: #ffd6e8;
+      --code-bg: #272822;
+      --code-text: #f8f8f2;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #ffffff 0, var(--bg) 55%, #e3ddcf 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 32px 16px;
+    }
+
+    .page-wrapper {
+      max-width: 1100px;
+      width: 100%;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+      position: relative;
+    }
+
+    .header-title {
+      display: inline-block;
+      padding: 10px 18px;
+      background: #fff8e6;
+      border-radius: 12px;
+      border: 2px solid #f4c76a;
+      box-shadow: 0 4px 0 #d9a74f;
+      font-weight: 700;
+      font-size: 20px;
+      letter-spacing: 0.03em;
+      position: relative;
+    }
+
+    .header-title::before {
+      content: "новичкам";
+      position: absolute;
+      top: -16px;
+      right: -6px;
+      background: var(--accent2);
+      padding: 3px 7px;
+      border-radius: 8px;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      box-shadow: 0 3px 0 rgba(0,0,0,0.12);
+    }
+
+    .header-note {
+      margin-top: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .tape {
+      width: 80px;
+      height: 18px;
+      background: rgba(255,255,255,0.7);
+      position: absolute;
+      top: -6px;
+      transform: rotate(-6deg);
+      left: 22%;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.18);
+    }
+
+    .tape-right {
+      left: auto;
+      right: 22%;
+      transform: rotate(7deg);
+    }
+
+    /* Книга */
+
+    .book {
+      position: relative;
+      margin: 0 auto;
+      background: var(--book-bg);
+      border-radius: 18px;
+      border: 2px solid var(--book-border);
+      box-shadow:
+        0 12px 24px rgba(0,0,0,0.18),
+        0 0 0 10px rgba(255,255,255,0.6);
+      padding: 28px 32px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .book::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 2px;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.1), transparent 20%, rgba(0,0,0,0.1) 80%, transparent);
+    }
+
+    .book::after {
+      content: "";
+      position: absolute;
+      inset: 10px;
+      border-radius: 14px;
+      border: 1px dashed rgba(0,0,0,0.05);
+      pointer-events: none;
+    }
+
+    .page-side {
+      padding: 4px 8px;
+      position: relative;
+    }
+
+    .page-label {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #fff4d6;
+      border: 1px solid #f0c071;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #846018;
+      margin-bottom: 8px;
+    }
+
+    .sticker-tag {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: var(--sticker-pink);
+      padding: 4px 9px;
+      border-radius: 10px;
+      font-size: 11px;
+      transform: rotate(4deg);
+      box-shadow: 0 3px 0 rgba(0,0,0,0.15);
+    }
+
+    .sticker-tag span {
+      font-weight: 700;
+    }
+
+    /* Блоки как наклейки */
+
+    .note-card {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+      box-shadow: 0 5px 0 rgba(0,0,0,0.12);
+      border: 1px solid rgba(0,0,0,0.08);
+      position: relative;
+    }
+
+    .note-card.small-shadow {
+      box-shadow: 0 3px 0 rgba(0,0,0,0.12);
+    }
+
+    .note-card::before {
+      content: "";
+      position: absolute;
+      width: 42px;
+      height: 16px;
+      background: rgba(255,255,255,0.75);
+      top: -8px;
+      left: 18px;
+      transform: rotate(-5deg);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.14);
+    }
+
+    .note-title {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .note-title-mark {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .note-body {
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .note-body strong {
+      font-weight: 700;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 2px 7px;
+      font-size: 10px;
+      border-radius: 999px;
+      background: #ffe8ba;
+      margin-right: 4px;
+      margin-bottom: 4px;
+    }
+
+    .note-sticker-green {
+      background: var(--sticker-green);
+    }
+
+    .note-sticker-pink {
+      background: var(--sticker-pink);
+    }
+
+    /* Кодовые блоки */
+
+    .code-card {
+      background: var(--code-bg);
+      border-radius: 10px;
+      padding: 8px 10px;
+      margin-top: 6px;
+      color: var(--code-text);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 11px;
+      line-height: 1.5;
+      position: relative;
+      overflow-x: auto;
+    }
+
+    .code-card::before {
+      content: "SQL";
+      position: absolute;
+      top: -10px;
+      right: 10px;
+      font-size: 9px;
+      background: #444;
+      color: #eee;
+      padding: 1px 6px;
+      border-radius: 999px;
+      letter-spacing: 0.12em;
+    }
+
+    .code-comment {
+      color: #a6e22e;
+    }
+
+    .code-keyword {
+      color: #66d9ef;
+    }
+
+    .code-ident {
+      color: #f8f8f2;
+    }
+
+    .code-string {
+      color: #e6db74;
+    }
+
+    /* Небольшие декоративные элементы */
+
+    .bookmark {
+      position: absolute;
+      top: -18px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 42px;
+      background: linear-gradient(to bottom, #ffcf7d, #ffa45f);
+      border-radius: 6px 6px 0 0;
+      box-shadow: 0 6px 0 #d98b45;
+      clip-path: polygon(0 0, 100% 0, 100% 70%, 50% 100%, 0 70%);
+    }
+
+    .bookmark-label {
+      position: absolute;
+      top: -4px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #5e3a00;
+      font-weight: 700;
+    }
+
+    .footer-note {
+      margin-top: 16px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Донат-блок */
+
+    .donate-box {
+      margin: 20px auto 0;
+      max-width: 420px;
+      text-align: center;
+      background: #fffdf7;
+      border-radius: 14px;
+      border: 1px dashed rgba(0,0,0,0.08);
+      box-shadow: 0 6px 0 rgba(0,0,0,0.08);
+      padding: 14px 16px 16px;
+      position: relative;
+    }
+
+    .donate-box::before {
+      content: "";
+      position: absolute;
+      width: 60px;
+      height: 18px;
+      background: rgba(255,255,255,0.8);
+      top: -10px;
+      left: 20%;
+      transform: rotate(-5deg);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.16);
+    }
+
+    .donate-title {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .donate-text {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .donate-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      background: linear-gradient(135deg, #ffb347, #ff8554);
+      color: #3b2500;
+      font-weight: 600;
+      font-size: 13px;
+      box-shadow: 0 4px 0 #d27a3a;
+      text-decoration: none;
+    }
+
+    .donate-button span {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .donate-heart {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #ffe8ef;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+    }
+
+    @media (max-width: 800px) {
+      body {
+        padding: 20px 10px;
+      }
+      .book {
+        grid-template-columns: 1fr;
+        padding: 22px 16px;
+      }
+      .book::before {
+        display: none;
+      }
+      .bookmark {
+        top: -14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+    <header class="header">
+      <div class="tape"></div>
+      <div class="tape tape-right"></div>
+      <div class="header-title">
+        PostgreSQL шпаргалка
+      </div>
+      <div class="header-note">
+        Быстрый старт с основами SQL и PostgreSQL на одной «странице».
+      </div>
+    </header>
+
+    <div class="book">
+      <div class="bookmark"></div>
+      <div class="bookmark-label">pg basics</div>
+
+      <!-- Левая страница -->
+      <section class="page-side">
+        <div class="page-label">страница 1 · основы</div>
+        <div class="sticker-tag">
+          <span>start</span> here
+        </div>
+
+        <article class="note-card">
+          <div class="note-title">
+            <span class="note-title-mark"></span>
+            Что такое PostgreSQL?
+          </div>
+          <div class="note-body">
+            <span class="pill">СУБД</span>
+            <span class="pill note-sticker-green">open‑source</span>
+            <p>
+              PostgreSQL — мощная объектно‑реляционная СУБД.<br>
+              Подходит для веб‑приложений, аналитики и сложных запросов.
+            </p>
+          </div>
+        </article>
+
+        <article class="note-card small-shadow">
+          <div class="note-title">
+            <span class="note-title-mark"></span>
+            Подключение (psql)
+          </div>
+          <div class="note-body">
+            <p><strong>Формат:</strong></p>
+            <div class="code-card">
+              <span class="code-comment">-- из терминала</span><br>
+              <span class="code-keyword">psql</span> -h <span class="code-ident">host</span> -p <span class="code-ident">5432</span> -U <span class="code-ident">user</span> -d <span class="code-ident">dbname</span>
+            </div>
+            <p style="margin-top:6px;">
+              Если база локально и пользователь по умолчанию:
+              <br><code style="font-size:11px;">psql -d postgres</code>
+            </p>
+          </div>
+        </article>
+
+        <article class="note-card">
+          <div class="note-title">
+            <span class="note-title-mark"></span>
+            Базовый CRUD (SELECT / INSERT / UPDATE / DELETE)
+          </div>
+          <div class="note-body">
+            <p><strong>Выборка (SELECT):</p>
+            <div class="code-card">
+              <span class="code-comment">-- все колонки</span><br>
+              <span class="code-keyword">SELECT</span> * <span class="code-keyword">FROM</span> <span class="code-ident">users</span>;<br><br>
+              <span class="code-comment">-- конкретные колонки + фильтр</span><br>
+              <span class="code-keyword">SELECT</span> id, email <span class="code-keyword">FROM</span> users<br>
+              &nbsp;&nbsp;<span class="code-keyword">WHERE</span> active = <span class="code-string">true</span>;<br>
+            </div>
+
+            <p style="margin-top:6px;"><strong>Добавление (INSERT):</strong></p>
+            <div class="code-card">
+              <span class="code-keyword">INSERT INTO</span> users (email, password)<br>
+              <span class="code-keyword">VALUES</span> (<span class="code-string">'test@example.com'</span>, <span class="code-string">'secret'</span>)<br>
+              <span class="code-keyword">RETURNING</span> id;
+            </div>
+          </div>
+        </article>
+
+        <article class="note-card small-shadow">
+          <div class="note-title">
+            <span class="note-title-mark"></span>
+            Создание таблицы (CREATE TABLE)
+          </div>
+          <div class="note-body">
+            <div class="pill note-sticker-green">serial / bigserial</div>
+            <div class="pill note-sticker-pink">primary key</div>
+            <div class="code-card">
+              <span class="code-keyword">CREATE TABLE</span> users (<br>
+              &nbsp;&nbsp;id <span class="code-keyword">SERIAL PRIMARY KEY</span>,<br>
+              &nbsp;&nbsp;email <span class="code-keyword">TEXT</span> <span class="code-keyword">NOT NULL UNIQUE</span>,<br>
+              &nbsp;&nbsp;created_at <span class="code-keyword">TIMESTAMPTZ</span> <span class="code-keyword">DEFAULT NOW</span>()<br>
+              );
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <!-- Правая страница -->
+      <section class="page-side">
+        <div class="page-label">страница 2 · практика</div>
+
+        <article class="note-card">
+          <div class="note-title">
+            <span class="note-title-mark"></span>
+            Фильтры и сортировка
+          </div>
+          <div class="note-body">
+            <p><strong>WHERE, ORDER BY, LIMIT:</strong></p>
+            <div class="code-card">
+              <span class="code-keyword">SELECT</span> id, email<br>
+              <span class="code-keyword">FROM</span> users<br>
+              <span class="code-keyword">WHERE</span> created_at &gt; <span class="code-string">'2024-01-01'</span><br>
+              <span class="code-keyword">ORDER BY</span> created_at <span class="code-keyword">DESC</span><br>
+              <span class="code-keyword">LIMIT</span> 10 <span class="code-keyword">OFFSET</span> 0;
+            </div>
+          </div>
+        </article>
+
+        <article class="note-card small-shadow">
+          <div class="note-title">
+            <span class="note-title-mark"></span>
+            JOIN (соединение таблиц)
+          </div>
+          <div class="note-body">
+            <p><strong>INNER JOIN пример:</strong></p>
+            <div class="code-card">
+              <span class="code-keyword">SELECT</span> u.email, o.total<br>
+              <span class="code-keyword">FROM</span> users u<br>
+              <span class="code-keyword">JOIN</span> orders o<br>
+              &nbsp;&nbsp;<span class="code-keyword">ON</span> o.user_id = u.id;
+            </div>
+            <p style="margin-top:6px;">
+              Другие варианты: <strong>LEFT JOIN</strong>, <strong>RIGHT JOIN</strong>, <strong>FULL JOIN</strong>.
+            </p>
+          </div>
+        </article>
+
+        <article class="note-card">
+          <div class="note-title">
+            <span class="note-title-mark"></span>
+            Индексы
+          </div>
+          <div class="note-body">
+            <p>
+              Индексы ускоряют поиск по колонкам, но замедляют вставку/обновление.<br>
+              Создавай индексы по часто используемым фильтрам и связям.
+            </p>
+            <div class="code-card">
+              <span class="code-keyword">CREATE INDEX</span> idx_users_email<br>
+              <span class="code-keyword">ON</span> users (email);
+            </div>
+          </div>
+        </article>
+
+        <article class="note-card small-shadow">
+          <div class="note-title">
+            <span class="note-title-mark"></span>
+            Типичные команды администратора
+          </div>
+          <div class="note-body">
+            <p><strong>Создание БД и пользователя:</strong></p>
+            <div class="code-card">
+              <span class="code-keyword">CREATE DATABASE</span> app_db;<br>
+              <span class="code-keyword">CREATE USER</span> app_user <span class="code-keyword">WITH PASSWORD</span> <span class="code-string">'secret'</span>;<br>
+              <span class="code-keyword">GRANT ALL PRIVILEGES ON DATABASE</span> app_db<br>
+              <span class="code-keyword">TO</span> app_user;
+            </div>
+            <p style="margin-top:6px;">
+              Посмотреть список баз: <code style="font-size:11px;">\\l</code><br>
+              Список таблиц в текущей базе: <code style="font-size:11px;">\\dt</code>
+            </p>
+          </div>
+        </article>
+
+        <article class="note-card">
+          <div class="note-title">
+            <span class="note-title-mark"></span>
+            Мини‑чеклист для новичка
+          </div>
+          <div class="note-body">
+            <ul style="padding-left:18px; margin: 4px 0; font-size:12px;">
+              <li>Установи PostgreSQL и клиент <code>psql</code>.</li>
+              <li>Создай отдельную базу и пользователя под проект.</li>
+              <li>Добавь первую таблицу и потренируйся в CRUD.</li>
+              <li>Не забывай про индексы на ключевых колонках.</li>
+            </ul>
+          </div>
+        </article>
+      </section>
+    </div>
+
+    
+
+    <!-- Донат -->
+    <div class="donate-box">
+      <div class="donate-title">Поддержать автора шпаргалки</div>
+      <div class="donate-text">
+        Нравится формат «книжки»? Можешь отблагодарить небольшой суммой — это мотивирует делать новые шпаргалки и мини‑утилиты.
+      </div>
+      <a
+        class="donate-button"
+        href="https://yoomoney.ru/to/4100117099095471"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <div class="donate-heart">❤</div>
+        <span>донат через YooMoney</span>
+      </a>
+    </div>
+  </div>
+</body>
+</html>
 
